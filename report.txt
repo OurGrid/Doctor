@@ -1,0 +1,109 @@
+============JOB=============================
+Job EchoJob
+Status: FINISHED
+============TASKS===========================
+Task 1
+Status: FINISHED
+Spec: 
+   INIT PHASE:
+   REMOTE PHASE:
+      echo Abc
+   FINAL PHASE:
+   SABOTAGE CHECK COMMAND:
+      empty!
+============Replicas========================
+Replica 1
+Status: ABORTED
+Phase: INIT
+Allocated to: lcc2-01_4@xmpp.ourgrid.org/WORKER/WORKER/5227167157920539761
+Replica 2
+Status: FINISHED
+Phase: FINISHED
+Allocated to: lcc2-03_2@xmpp.ourgrid.org/WORKER/WORKER/5491202661351926434
+ExitValue: 0
+ StdOut: Abc
+
+ StdErr: 
+
+Replica 3
+Status: ABORTED
+Phase: INIT
+Allocated to: lcc2-01_2@xmpp.ourgrid.org/WORKER/WORKER/184990252090800769
+============================================
+============ERRORS==========================
+============================================
+============JOB=============================
+Job SimpleJob4
+Status: FINISHED
+============TASKS===========================
+Task 1
+Status: FINISHED
+Spec: 
+   INIT PHASE:
+   REMOTE PHASE:
+      echo Hello World! >> $STORAGE/storageHelloWorld
+   FINAL PHASE:
+    Condition: []
+      IOEntry: [get $STORAGE/storageHelloWorld to D:\Workspaces\workspaceLSD\jobs-de-teste\storageHelloWorld]
+   SABOTAGE CHECK COMMAND:
+      empty!
+============Replicas========================
+Replica 1
+Status: ABORTED
+Phase: INIT
+Allocated to: lcc2-01_5@xmpp.ourgrid.org/WORKER/WORKER/3321005519968449419
+Replica 2
+Status: ABORTED
+Phase: FINAL
+Allocated to: lcc2-01_1@xmpp.ourgrid.org/WORKER/WORKER/5843911621095130345
+ExitValue: 0
+ StdOut: 
+ StdErr: 
+
+Replica 3
+Status: FINISHED
+Phase: FINISHED
+Allocated to: lcc2-03_1@xmpp.ourgrid.org/WORKER/WORKER/3543436647752257474
+ExitValue: 0
+ StdOut: 
+ StdErr: 
+
+============================================
+Task 2
+Status: FINISHED
+Spec: 
+   INIT PHASE:
+    Condition: []
+      IOEntry: [put D:\Workspaces\workspaceLSD\jobs-de-teste\Fat.class to Fat.class]
+   REMOTE PHASE:
+      java -cp . Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+   FINAL PHASE:
+    Condition: []
+      IOEntry: [get output-$JOB.$TASK to D:\Workspaces\workspaceLSD\jobs-de-teste\output-$JOB.$TASK]
+   SABOTAGE CHECK COMMAND:
+      empty!
+============Replicas========================
+Replica 1
+Status: ABORTED
+Phase: REMOTE
+Allocated to: lcc2-01_3@xmpp.ourgrid.org/WORKER/WORKER/9168381346608011382
+Replica 2
+Status: FINISHED
+Phase: FINISHED
+Allocated to: lcc2-03_6@xmpp.ourgrid.org/WORKER/WORKER/5516291745094711234
+ExitValue: 0
+ StdOut: 
+ StdErr: 
+
+Replica 3
+Status: FAILED
+Phase: FINAL
+Erro cause: error reading from input stream
+Allocated to: lcc2-03_7@xmpp.ourgrid.org/WORKER/WORKER/7098548555047056193
+ExitValue: 0
+ StdOut: 
+ StdErr: 
+
+============================================
+============ERRORS==========================
+============================================
