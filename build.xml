@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="jar" name="ourgriddoctor">
+
+    <property name="app.version" value="1.0" />
+    <property name="target.dir" value="target" />
+    <property name="lib.dir" value="lib" />
+    <property name="classes.dir" value="${target.dir}/classes" />
+    <property name="src.dir" value="src" />
+
+    <target name="clean">
+        <delete dir="${target.dir}" />
+    </target>
+
+    <target name="compile" depends="clean">
+        <mkdir dir="${classes.dir}" />
+        <javac srcdir="src" destdir="${classes.dir}">
+            <classpath>
+                <fileset dir="${lib.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${target.dir}/${ant.project.name}-${app.version}.jar" basedir="${classes.dir}"/>
+    </target>
+
+    <target name="build" depends="jar"/>
+    
+</project>
