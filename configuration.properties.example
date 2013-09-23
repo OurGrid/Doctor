@@ -1,0 +1,11 @@
+broker.properties.path=~/.broker/broker.properties
+broker.retrieval.interval=10
+jobs.path=~/.broker/jobs
+sandbox.path=/tmp/doctor.sandbox
+report.path=/var/www/ogdoctor/reports/
+report.url=http://estrela.lsd.ufcg.edu.br/ogdoctor/reports/
+mail.sender=ourgrid.doctor@lsd.ufcg.edu.br
+mail.recipient=abmargb@gmail.com,marcosnobregajr@gmail.com
+mail.subject=OurGrid Doctor Report
+mail.protocol=smtp
+mail.smtp.host=japones.lsd.ufcg.edu.br

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +18,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.ourgrid.broker.status.GridProcessStatusInfo;
 import org.ourgrid.broker.status.JobStatusInfo;
 import org.ourgrid.broker.status.TaskStatusInfo;
@@ -43,19 +47,26 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class Doctor {
-	private final String BROKER_PROPERTIES_PATH = "C:\\Users\\Marcos\\.broker\\broker.properties";
-	private final String JOBS_FILES_DIR = "D:\\Workspaces\\workspaceLSD\\jobs-de-teste\\";
-	private final int GET_STATUS_INITIAL_DELAY = 0;
-	private final int GET_STATUS_DELAY = 10;
+	
+	private static final int GET_STATUS_INITIAL_DELAY = 0;
+	private static final Logger LOGGER = Logger.getLogger(Doctor.class);
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
 	
 	private DoctorAsyncApplicationClient brokerDoctorClient;
 	private List<Integer> jobsIds = new LinkedList<Integer>();
 	private Map<Integer,String> jobsProperties = new HashMap<Integer,String>();
 	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
 	private ScheduledFuture<?> scheduledFuture;
+	private Properties configuration;
 	
-	public Doctor() throws CommuneNetworkException, ProcessorStartException {
-		File brokerProperties = new File(BROKER_PROPERTIES_PATH);
+	public Doctor() throws CommuneNetworkException, ProcessorStartException, IOException {
+		
+		String configurationFilePath = System.getenv("doctor.configuration");
+		
+		this.configuration = new Properties();
+		this.configuration.load(new FileInputStream(configurationFilePath));
+		
+		File brokerProperties = new File(configuration.getProperty(Conf.BROKER_PROPERTIES_PATH));
 		ModuleContext brokerClientContext = new DoctorContextFactory(
 				new PropertiesFileParser(brokerProperties.getAbsolutePath())).createContext();
 		brokerDoctorClient = new DoctorAsyncApplicationClient(brokerClientContext);
@@ -70,7 +81,11 @@ public class Doctor {
 			
 			@Override
 			public void doctorIsUp() {
-				submitJobs();
+				try {
+					submitJobs();
+				} catch (Exception e) {
+					LOGGER.error("Failure while submitting jobs.", e);
+				}
 			}
 
 			@Override
@@ -80,11 +95,23 @@ public class Doctor {
 		});
 	}
 	
-	private void submitJobs() {
-		File jdfDir = new File(JOBS_FILES_DIR);
+	private void submitJobs() throws IOException {
+		
+		String jobsDir = configuration.getProperty(Conf.JOBS_PATH);
+		String sandboxDirPath = configuration.getProperty(Conf.SANDBOX_PATH);
+
+		File sandboxDir = new File(sandboxDirPath);
+		
+		try {
+			FileUtils.deleteDirectory(sandboxDir);
+		} catch (Exception e) {
+			// Best effort here
+		}
+		FileUtils.copyDirectory(new File(jobsDir), sandboxDir);
+		
 		CommonCompiler compiler = new CommonCompiler();
-		if (jdfDir.isDirectory()) {
-			for (File jdfFile : jdfDir.listFiles()) {
+		if (sandboxDir.isDirectory()) {
+			for (File jdfFile : sandboxDir.listFiles()) {
 				if (jdfFile.isFile() && jdfFile.getName().endsWith(".jdf")) {
 					JobSpecification theJob = null;
 					try {
@@ -104,13 +131,13 @@ public class Doctor {
 				}
 			}
 		}
-		System.out.println(jobsProperties.toString());
+		String getStatusDelayStr = configuration.getProperty(Conf.BROKER_RETRIEVAL_INTERVAL);
 		scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
 			@Override
 			public void run() {
 				brokerDoctorClient.getJobsStatus(jobsIds);
 			}
-		}, GET_STATUS_INITIAL_DELAY, GET_STATUS_DELAY, TimeUnit.SECONDS);
+		}, GET_STATUS_INITIAL_DELAY, Long.valueOf(getStatusDelayStr), TimeUnit.SECONDS);
 	}
 
 	private void hereIsCompleteJobStatus(JobsPackage jobsStatus) {
@@ -121,19 +148,28 @@ public class Doctor {
 		}
 		scheduledFuture.cancel(true);
 		StringBuilder report = new StringBuilder();
-		if (!reportResults(jobsStatus, report)) {
-			//TODO Send mail
-		}
+		boolean succeeded = reportResults(jobsStatus, report);
+		String reportBasePath = configuration.getProperty(Conf.REPORT_PATH);
+		
+		String reportFileName = "report-" + DATE_FORMAT.format(new Date()) + ".txt";
+		
 		try {
-			new EmailSender().send(report.toString());
-		} catch (MessagingException e1) {
-			e1.printStackTrace();
-		}
-		try {
-			IOUtils.write(report.toString(), new FileOutputStream("report.txt"));
+			IOUtils.write(report.toString(), new FileOutputStream(new File(reportBasePath, reportFileName)));
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.error("Could not write report.", e);
 		}
+		
+		if (!succeeded) {
+			try {
+				String reportBaseURL = configuration.getProperty(Conf.REPORT_URL);
+				String reportLink = reportBaseURL + reportFileName;
+				new EmailSender(configuration).send(
+						"Doctor failed! See results at <a href='" + reportLink + "'>" + reportLink + "</a>.");
+			} catch (MessagingException e1) {
+				LOGGER.error("Could not send email.", e1);
+			}
+		}
+		
 		try {
 			brokerDoctorClient.shutdown();
 		} catch (CommuneNetworkException e) {
@@ -213,6 +249,9 @@ public class Doctor {
 
 	private boolean checkTasksOutput(JobStatusInfo jobStatus,
 			JsonArray expectedSizes, StringBuilder builder) {
+		
+		String sandboxDirPath = configuration.getProperty(Conf.SANDBOX_PATH);
+		
 		boolean allOk = true;
 		for (TaskStatusInfo taskStatus : jobStatus.getTasks()) {
 			JsonArray taskExpectedSizes = (JsonArray) expectedSizes.get(taskStatus.getTaskId()-1);
@@ -221,7 +260,7 @@ public class Doctor {
 				String outputName = expectSizeObj.get("name").getAsString();
 				outputName = outputName.replace("$TASK", String.valueOf(taskStatus.getTaskId()))
 						.replace("$JOB", String.valueOf(taskStatus.getJobId()));
-				File outputFile = new File(JOBS_FILES_DIR + outputName);
+				File outputFile = new File(sandboxDirPath, outputName);
 				
 				if (!outputFile.exists()) {
 					addLine(builder, "Output " + outputName + " was not found. "
