@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OurGrid Doctor</title>
+<link 
+	href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" 
+	rel="stylesheet" type="text/css">
+<link href="static/index-style.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		var REPORTS_URL = 'http://alfinete.lsd.ufcg.edu.br/ogdoctor/reports/';
+		$("#datepicker").datepicker({ 
+			dateFormat: "dd-mm-yy",
+			showOn: 'button',
+			buttonImage: "static/calendar-36.png",
+			buttonImageOnly: true,
+			onSelect: function(dateText, component) {
+				$("#reportsList").attr('src',REPORTS_URL + dateText);
+			}
+		});
+	});
+</script>
+</head>
+<body>
+	<div id="header">
+        <ul>
+        	<li><img src="static/header-simple-logo.png"/></li>
+        	<li><a href="http://ourgrid.org" target="_blank">ourgrid.org</a></li>
+            <li><a href="http://status.ourgrid.org" target="_blank">status</a></li>
+            <li><a href="http://portal.ourgrid.org" target="_blank">portal</a></li>
+            <li><a href="http://charts.ourgrid.org" target="_blank">charts</a></li>
+        </ul>
+	</div>
+	<div id="content">
+		<h2 class="header-text">OurGrid Doctor</h2>
+		<p class="date-selector-text">
+			Select the date to see the reports 
+			<input type="text" style="display: none;" id="datepicker">
+		</p>
+		<iframe id="reportsList" src="http://alfinete.lsd.ufcg.edu.br/ogdoctor/reports" width="100%" height="500"></iframe>
+	</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+/* CSS Document */
+
+/**** Isotope Filtering ****/
+
+.isotope-item {
+  z-index: 2;
+}
+
+.isotope-hidden.isotope-item {
+  pointer-events: none;
+  z-index: 1;
+}
+
+/**** Isotope CSS3 transitions ****/
+
+.isotope,
+.isotope .isotope-item {
+  -webkit-transition-duration: 0.8s;
+     -moz-transition-duration: 0.8s;
+      -ms-transition-duration: 0.8s;
+       -o-transition-duration: 0.8s;
+          transition-duration: 0.8s;
+}
+
+.isotope {
+  -webkit-transition-property: height, width;
+     -moz-transition-property: height, width;
+      -ms-transition-property: height, width;
+       -o-transition-property: height, width;
+          transition-property: height, width;
+}
+
+.isotope .isotope-item {
+  -webkit-transition-property: -webkit-transform, opacity;
+     -moz-transition-property:    -moz-transform, opacity;
+      -ms-transition-property:     -ms-transform, opacity;
+       -o-transition-property:         top, left, opacity;
+          transition-property:         transform, opacity;
+}
+
+/**** disabling Isotope CSS3 transitions ****/
+
+.isotope.no-transition,
+.isotope.no-transition .isotope-item,
+.isotope .isotope-item.no-transition {
+  -webkit-transition-duration: 0s;
+     -moz-transition-duration: 0s;
+      -ms-transition-duration: 0s;
+       -o-transition-duration: 0s;
+          transition-duration: 0s;
+}
+
+/**** Base styles ****/
+
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+body {
+  margin:0px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.7em;
+  background: #FFFFFF;
+  color: #000;
+}
+
+h1, h2, h3, p, ol, pre, dl {
+  margin-bottom: 1.0em;
+}
+
+h1, h2, #super-list, .element, .tagline, #index-list, 
+.super-list .link {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+h1, h2, h3 { font-weight: bold; }
+
+h1 {
+  font-size: 32px;
+  line-height: 1.1em;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 1.1em;
+}
+
+a,
+a code {
+  text-decoration: none;
+  color: inherit;
+}
+
+a img { border: none; }
+
+em { font-style: italic; }
+strong { font-weight: bold; }
+
+blockquote {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  border-left: 1px solid #333;
+  font-style: italic;
+}
+
+/* Web Doctor Style */
+
+#header {
+	margin-bottom: 15px;
+	height: 42px;
+	padding: 2px;
+	background: #333;
+	text-align:left;
+}
+
+#header img {
+	margin: 3px;
+}
+
+#header ul {
+	color: #FFF; 
+	display: table;
+}
+
+#header ul li {
+	display: table-cell; 
+	vertical-align: middle;
+	padding-right: 20px;
+	font-weight: bold;
+	font-size: 16px;
+	color:#CCC;
+}
+
+#header ul li a:hover {
+	color:#FFF;
+}
+
+#content {
+	width: 980px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.header-text {
+	margin: 0;
+	text-align: center;
+}
+
+.date-selector-text {
+	height: 36px;
+	line-height: 36px;
+	text-align: center;
+}
+
+.date-selector-text img {
+	position: relative;
+	top: 10px;
+}
