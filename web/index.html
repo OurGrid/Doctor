@@ -14,9 +14,6 @@
 		var REPORTS_URL = 'http://alfinete.lsd.ufcg.edu.br/ogdoctor/reports/';
 		$("#datepicker").datepicker({ 
 			dateFormat: "dd-mm-yy",
-			showOn: 'button',
-			buttonImage: "static/calendar-36.png",
-			buttonImageOnly: true,
 			onSelect: function(dateText, component) {
 				$("#reportsList").attr('src',REPORTS_URL + dateText);
 			}
@@ -36,10 +33,8 @@
 	</div>
 	<div id="content">
 		<h2 class="header-text">OurGrid Doctor</h2>
-		<p class="date-selector-text">
-			Select the date to see the reports 
-			<input type="text" style="display: none;" id="datepicker">
-		</p>
+		<p class="tip">Pick a date to see Doctor reports</p>
+		<div id="datepicker"></div>
 		<iframe id="reportsList" src="" width="100%" height="500"></iframe>
 	</div>
 </body>

@@ -165,13 +165,13 @@ blockquote {
 	text-align: center;
 }
 
-.date-selector-text {
-	height: 36px;
-	line-height: 36px;
-	text-align: center;
+#datepicker {
+	width: 251px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 20px;
 }
 
-.date-selector-text img {
-	position: relative;
-	top: 10px;
+.tip {
+	text-align: center;
 }
