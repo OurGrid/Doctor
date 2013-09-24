@@ -204,7 +204,7 @@ public class Doctor {
 				addLine(report, "Phase: " + process.getPhase());
 				String executionErrorCause = process.getReplicaResult().getExecutionErrorCause();
 				if (executionErrorCause != null) {
-					addLine(report, "Erro cause: " + executionErrorCause);
+					addLine(report, "Error cause: " + executionErrorCause);
 				}
 				WorkerStatusInfo allocation = process.getWorkerInfo();
 				if (allocation != null) {
