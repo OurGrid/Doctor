@@ -50,7 +50,7 @@ public class Doctor {
 	
 	private static final int GET_STATUS_INITIAL_DELAY = 0;
 	private static final Logger LOGGER = Logger.getLogger(Doctor.class);
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy-HH");
 	
 	private DoctorAsyncApplicationClient brokerDoctorClient;
 	private List<Integer> jobsIds = new LinkedList<Integer>();
