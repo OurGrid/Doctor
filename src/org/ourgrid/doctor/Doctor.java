@@ -61,7 +61,7 @@ public class Doctor {
 	
 	public Doctor() throws CommuneNetworkException, ProcessorStartException, IOException {
 		
-		String configurationFilePath = System.getenv("doctor.configuration");
+		String configurationFilePath = System.getProperty("doctor.configuration");
 		
 		this.configuration = new Properties();
 		this.configuration.load(new FileInputStream(configurationFilePath));
