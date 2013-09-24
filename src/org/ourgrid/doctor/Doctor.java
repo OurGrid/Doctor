@@ -50,6 +50,7 @@ public class Doctor {
 	
 	private static final int GET_STATUS_INITIAL_DELAY = 0;
 	private static final Logger LOGGER = Logger.getLogger(Doctor.class);
+	private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm");
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm");
 	
 	private DoctorAsyncApplicationClient brokerDoctorClient;
@@ -150,11 +151,12 @@ public class Doctor {
 		StringBuilder report = new StringBuilder();
 		boolean succeeded = reportResults(jobsStatus, report);
 		String reportBasePath = configuration.getProperty(Conf.REPORT_PATH);
-		
-		String reportFileName = "report-" + DATE_FORMAT.format(new Date()) + ".txt";
+		File reportBaseDirectory = new File(reportBasePath + "/" + DATE_FORMAT);
+		reportBaseDirectory.mkdirs();
+		String reportFileName = "report-" + DATETIME_FORMAT.format(new Date()) + ".txt";
 		
 		try {
-			IOUtils.write(report.toString(), new FileOutputStream(new File(reportBasePath, reportFileName)));
+			IOUtils.write(report.toString(), new FileOutputStream(new File(reportBaseDirectory.getAbsolutePath(), reportFileName)));
 		} catch (IOException e) {
 			LOGGER.error("Could not write report.", e);
 		}
