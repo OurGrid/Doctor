@@ -1,9 +1,9 @@
-broker.properties.path=~/.broker/broker.properties
+broker.properties.path=/home/ourgrid/.broker/broker.properties
 broker.retrieval.interval=10
-jobs.path=~/.broker/jobs
+jobs.path=/home/ourgrid/.broker/jobs
 sandbox.path=/tmp/doctor.sandbox
 report.path=/var/www/ogdoctor/reports/
-report.url=http://estrela.lsd.ufcg.edu.br/ogdoctor/reports/
+report.url=http://alfinete.lsd.ufcg.edu.br/ogdoctor/reports/
 mail.sender=ourgrid.doctor@lsd.ufcg.edu.br
 mail.recipient=abmargb@gmail.com,marcosnobregajr@gmail.com
 mail.subject=OurGrid Doctor Report

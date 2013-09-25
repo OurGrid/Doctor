@@ -165,7 +165,7 @@ public class Doctor {
 		if (!succeeded) {
 			try {
 				String reportBaseURL = configuration.getProperty(Conf.REPORT_URL);
-				String reportLink = reportBaseURL + reportFileName;
+				String reportLink = reportBaseURL + DATE_FORMAT.format(now) + "/" + reportFileName;
 				new EmailSender(configuration).send(
 						"Doctor failed! See results at <a href='" + reportLink + "'>" + reportLink + "</a>.");
 			} catch (MessagingException e1) {
