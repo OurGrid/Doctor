@@ -1,0 +1,7 @@
+job : 
+label 	: BigInputJob
+
+task :
+init 	: put biginput.tar.gz biginput-$JOB.$TASK.tar.gz
+remote 	: 
+final   : get biginput-$JOB.$TASK.tar.gz biginput-$JOB.$TASK.tar.gz

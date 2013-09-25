@@ -3,5 +3,5 @@ label 	: SleepJob
 
 task :
 init 	: 
-remote 	: sleep 36000
+remote 	: sleep 360
 final   : 

@@ -1,0 +1,7 @@
+job : 
+label 	: EmptyFileJob
+
+task :
+init 	: put empty.txt empty-$JOB.$TASK.txt
+remote 	: 
+final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt

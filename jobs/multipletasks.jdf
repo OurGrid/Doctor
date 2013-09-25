@@ -1,0 +1,89 @@
+job : 
+label 	: MultipleTasks
+
+task :
+init 	: put empty.txt empty-$JOB.$TASK.txt
+remote 	: 
+final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt
+
+task :
+init 	: 
+remote 	: echo Abc
+final   :
+
+task :
+init :
+remote : python -V
+
+task :
+init 	: put Fat.class Fat.class
+remote 	: java -cp . Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+final   : get output-$JOB.$TASK output-$JOB.$TASK
+
+task :
+init  	: store Fat.class Fat.class
+remote 	: java -cp .:$STORAGE Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+final   : get output-$JOB.$TASK output-$JOB.$TASK
+
+task :
+init  	: 
+remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+final   : get $STORAGE/storageHelloWorld storageHelloWorld
+
+task :
+init 	: put empty.txt empty-$JOB.$TASK.txt
+remote 	: 
+final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt
+
+task :
+init 	: 
+remote 	: echo Abc
+final   :
+
+task :
+init :
+remote : python -V
+
+task :
+init 	: put Fat.class Fat.class
+remote 	: java -cp . Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+final   : get output-$JOB.$TASK output-$JOB.$TASK
+
+task :
+init  	: store Fat.class Fat.class
+remote 	: java -cp .:$STORAGE Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+final   : get output-$JOB.$TASK output-$JOB.$TASK
+
+task :
+init  	: 
+remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+final   : get $STORAGE/storageHelloWorld storageHelloWorld
+
+task :
+init 	: put empty.txt empty-$JOB.$TASK.txt
+remote 	: 
+final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt
+
+task :
+init 	: 
+remote 	: echo Abc
+final   :
+
+task :
+init :
+remote : python -V
+
+task :
+init 	: put Fat.class Fat.class
+remote 	: java -cp . Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+final   : get output-$JOB.$TASK output-$JOB.$TASK
+
+task :
+init  	: store Fat.class Fat.class
+remote 	: java -cp .:$STORAGE Fat 3 261147332 6819792792357414911 output-$JOB.$TASK
+final   : get output-$JOB.$TASK output-$JOB.$TASK
+
+task :
+init  	: 
+remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+final   : get $STORAGE/storageHelloWorld storageHelloWorld

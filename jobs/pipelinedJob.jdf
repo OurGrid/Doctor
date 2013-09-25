@@ -1,5 +1,5 @@
 job:
-label: PipelinedJob - job with linux pipelined commands
+label: "PipelinedJob - job with linux pipelined commands"
 
 task:
 
