@@ -3,5 +3,5 @@ label 	: EmptyFileJob
 
 task :
 init 	: put empty.txt empty-$JOB.$TASK.txt
-remote 	: 
+remote 	: echo ABC
 final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt

@@ -3,7 +3,7 @@ label 	: MultipleTasks
 
 task :
 init 	: put empty.txt empty-$JOB.$TASK.txt
-remote 	: 
+remote 	: echo ABC 
 final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt
 
 task :
@@ -32,7 +32,7 @@ final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
 init 	: put empty.txt empty-$JOB.$TASK.txt
-remote 	: 
+remote 	: echo ABC
 final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt
 
 task :
@@ -61,7 +61,7 @@ final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
 init 	: put empty.txt empty-$JOB.$TASK.txt
-remote 	: 
+remote 	: echo ABC
 final   : get empty-$JOB.$TASK.txt empty-$JOB.$TASK.txt
 
 task :

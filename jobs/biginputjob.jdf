@@ -3,5 +3,5 @@ label 	: BigInputJob
 
 task :
 init 	: put biginput.tar.gz biginput-$JOB.$TASK.tar.gz
-remote 	: 
+remote 	: echo ABC
 final   : get biginput-$JOB.$TASK.tar.gz biginput-$JOB.$TASK.tar.gz
