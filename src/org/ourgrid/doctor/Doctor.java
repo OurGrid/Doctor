@@ -50,7 +50,7 @@ public class Doctor {
 	
 	private static final int GET_STATUS_INITIAL_DELAY = 0;
 	private static final Logger LOGGER = Logger.getLogger(Doctor.class);
-	private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm");
+	private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy'T'HH-mm");
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
 	
 	private DoctorAsyncApplicationClient brokerDoctorClient;
@@ -59,6 +59,7 @@ public class Doctor {
 	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
 	private ScheduledFuture<?> scheduledFuture;
 	private Properties configuration;
+	private boolean ignoreDoctorIsUp = false;
 	
 	public Doctor() throws CommuneNetworkException, ProcessorStartException, IOException {
 		
@@ -82,6 +83,10 @@ public class Doctor {
 			
 			@Override
 			public void doctorIsUp() {
+				if (ignoreDoctorIsUp) {
+					return;
+				}
+				ignoreDoctorIsUp = true;
 				try {
 					submitJobs();
 				} catch (Exception e) {
@@ -149,15 +154,24 @@ public class Doctor {
 		}
 		scheduledFuture.cancel(true);
 		StringBuilder report = new StringBuilder();
-		boolean succeeded = reportResults(jobsStatus, report);
-		String reportBasePath = configuration.getProperty(Conf.REPORT_PATH);
+		StringBuilder summary = new StringBuilder();
+		StringBuilder finalReport = new StringBuilder();
 		Date now = new Date();
+		finalReport.append(
+				"<html><head><title>OurGrid Doctor Report " 
+						+ DATETIME_FORMAT.format(now) + "</title></head><body><p>");
+		addLine(summary, "============SUMMARY=============================");
+		boolean succeeded = reportResults(jobsStatus, report, summary);
+		String reportBasePath = configuration.getProperty(Conf.REPORT_PATH);
 		File reportBaseDirectory = new File(reportBasePath + "/" + DATE_FORMAT.format(now));
 		reportBaseDirectory.mkdirs();
-		String reportFileName = "report-" + DATETIME_FORMAT.format(now) + ".txt";
+		String reportFileName = "report-" + DATETIME_FORMAT.format(now) + ".html";
+		finalReport.append(summary.toString());
+		finalReport.append(report.toString());
+		finalReport.append("</p></body></html>");
 		
 		try {
-			IOUtils.write(report.toString(), new FileOutputStream(new File(reportBaseDirectory.getAbsolutePath(), reportFileName)));
+			IOUtils.write(finalReport.toString(), new FileOutputStream(new File(reportBaseDirectory.getAbsolutePath(), reportFileName)));
 		} catch (IOException e) {
 			LOGGER.error("Could not write report.", e);
 		}
@@ -181,23 +195,31 @@ public class Doctor {
 		System.exit(0);
 	}
 	
-	private boolean reportResults(JobsPackage jobsStatus, StringBuilder report) {
+	private boolean reportResults(JobsPackage jobsStatus, StringBuilder report, StringBuilder summary) {
 		boolean allOk = true;
 		for (JobStatusInfo jobStatus : jobsStatus.getJobs().values()) {
-			allOk &= reportResults(jobStatus, report);
+			allOk &= reportResults(jobStatus, report, summary);
 			addLine(report, "============================================");
 		}
 		return allOk;
 	}
 
-	private boolean reportResults(JobStatusInfo jobStatus, StringBuilder report) {
+	private boolean reportResults(JobStatusInfo jobStatus, StringBuilder report, StringBuilder summary) {
 		addLine(report, "============JOB=============================");
-		addLine(report, "Job " + jobStatus.getJobSpec().getLabel());
+		addLine(report, "<span id='job" + jobStatus.getJobId() + "'>Job " 
+				+ jobStatus.getJobSpec().getLabel() + "</span>");
+		String summaryLine = "<a href='#job" + jobStatus.getJobId() + "'>Job " 
+				+ jobStatus.getJobSpec().getLabel() + ": " 
+				+ JobStatusInfo.getState(jobStatus.getState());
+		int tasksFailed = 0;
 		addLine(report, "Status: " + JobStatusInfo.getState(jobStatus.getState()));
 		addLine(report, "============TASKS===========================");
 		for (TaskStatusInfo taskStatus : jobStatus.getTasks()) {
 			addLine(report, "Task " + taskStatus.getTaskId());
 			addLine(report, "Status: " + taskStatus.getState());
+			if (taskStatus.getState().equals("FAILED")) {
+				tasksFailed++;
+			}
 			addLine(report, "Spec: ");
 			addLine(report, taskStatus.getSpec().toString());
 			addLine(report, "============Replicas========================");
@@ -221,6 +243,10 @@ public class Doctor {
 			addLine(report, "============================================");
 		}
 		
+		if (tasksFailed > 0) {
+			summaryLine += " - Tasks failed: " + tasksFailed;
+		}
+		addLine(summary, summaryLine + "</a>");
 		addLine(report, "============ERRORS==========================");
 		
 		if (jobStatus.getState() == JobStatusInfo.FINISHED) {
@@ -247,7 +273,7 @@ public class Doctor {
 	}
 
 	private void addLine(StringBuilder builder, String message) {
-		builder.append(message).append("\n");
+		builder.append(message).append("<br>");
 	}
 
 	private boolean checkTasksOutput(JobStatusInfo jobStatus,
