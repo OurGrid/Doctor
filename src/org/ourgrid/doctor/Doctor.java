@@ -231,9 +231,13 @@ public class Doctor {
 				JsonArray expectedSizes = (JsonArray) new JsonParser().parse(property);
 				if (!checkTasksOutput(jobStatus, expectedSizes, jobReport)) {
 					allOk = false;
+				} else {
+					jobReport.add("ERROR", "No errors found!");
 				}
+			} else {
+				allOk = true;
+				jobReport.add("ERROR", "No errors found!");
 			}
-			allOk = true;
 		} else {
 			jobReport.add("ERROR", "No errors found!");
 		}
