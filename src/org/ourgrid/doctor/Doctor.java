@@ -91,12 +91,18 @@ public class Doctor {
 					submitJobs();
 				} catch (Exception e) {
 					LOGGER.error("Failure while submitting jobs.", e);
+					System.exit(1);
 				}
 			}
 
 			@Override
 			public void hereIsJobStatus(JobsPackage jobsStatus) {
-				hereIsCompleteJobStatus(jobsStatus);
+				try {
+					hereIsCompleteJobStatus(jobsStatus);
+				} catch (Exception e) {
+					LOGGER.error("Failure while submitting jobs.", e);
+					System.exit(1);
+				}
 			}
 		});
 	}
@@ -146,32 +152,24 @@ public class Doctor {
 		}, GET_STATUS_INITIAL_DELAY, Long.valueOf(getStatusDelayStr), TimeUnit.SECONDS);
 	}
 
-	private void hereIsCompleteJobStatus(JobsPackage jobsStatus) {
+	private void hereIsCompleteJobStatus(JobsPackage jobsStatus) throws IOException {
 		for (JobStatusInfo jobStatus : jobsStatus.getJobs().values()) {
 			if (jobStatus.isRunning()) {
 				return;
 			}
 		}
 		scheduledFuture.cancel(true);
-		StringBuilder report = new StringBuilder();
-		StringBuilder summary = new StringBuilder();
-		StringBuilder finalReport = new StringBuilder();
+		ReportBuilder report = new ReportBuilder().load(new File("templates/report.tpl"));
 		Date now = new Date();
-		finalReport.append(
-				"<html><head><title>OurGrid Doctor Report " 
-						+ DATETIME_FORMAT.format(now) + "</title></head><body><p>");
-		addLine(summary, "============SUMMARY=============================");
-		boolean succeeded = reportResults(jobsStatus, report, summary);
+		report.set("REPORTTITLE", DATETIME_FORMAT.format(now));
+		boolean succeeded = reportResults(jobsStatus, report);
 		String reportBasePath = configuration.getProperty(Conf.REPORT_PATH);
 		File reportBaseDirectory = new File(reportBasePath + "/" + DATE_FORMAT.format(now));
 		reportBaseDirectory.mkdirs();
 		String reportFileName = "report-" + DATETIME_FORMAT.format(now) + ".html";
-		finalReport.append(summary.toString());
-		finalReport.append(report.toString());
-		finalReport.append("</p></body></html>");
 		
 		try {
-			IOUtils.write(finalReport.toString(), new FileOutputStream(new File(reportBaseDirectory.getAbsolutePath(), reportFileName)));
+			IOUtils.write(report.build(), new FileOutputStream(new File(reportBaseDirectory.getAbsolutePath(), reportFileName)));
 		} catch (IOException e) {
 			LOGGER.error("Could not write report.", e);
 		}
@@ -195,89 +193,98 @@ public class Doctor {
 		System.exit(0);
 	}
 	
-	private boolean reportResults(JobsPackage jobsStatus, StringBuilder report, StringBuilder summary) {
+	private boolean reportResults(JobsPackage jobsStatus, ReportBuilder report) throws IOException {
 		boolean allOk = true;
 		for (JobStatusInfo jobStatus : jobsStatus.getJobs().values()) {
-			allOk &= reportResults(jobStatus, report, summary);
-			addLine(report, "============================================");
+			allOk &= reportResults(jobStatus, report);
 		}
 		return allOk;
 	}
 
-	private boolean reportResults(JobStatusInfo jobStatus, StringBuilder report, StringBuilder summary) {
-		addLine(report, "============JOB=============================");
-		addLine(report, "<span id='job" + jobStatus.getJobId() + "'>Job " 
-				+ jobStatus.getJobSpec().getLabel() + "</span>");
-		String summaryLine = "<a href='#job" + jobStatus.getJobId() + "'>Job " 
-				+ jobStatus.getJobSpec().getLabel() + ": " 
-				+ JobStatusInfo.getState(jobStatus.getState());
+	private boolean reportResults(JobStatusInfo jobStatus, ReportBuilder report) throws IOException {
+		boolean allOk = false;
+		ReportBuilder jobReport = new ReportBuilder().load(new File("templates/job.tpl"));
+		jobReport.set("JOBID", jobStatus.getJobId())
+			.set("JOBLABEL", jobStatus.getSpec().getLabel())
+			.set("JOBSTATUS", JobStatusInfo.getState(jobStatus.getState()));
+		ReportBuilder summaryReport = new ReportBuilder().load(new File("templates/summary.tpl"));
+		summaryReport.set("JOBID", jobStatus.getJobId())
+			.set("JOBLABEL", jobStatus.getSpec().getLabel())
+			.set("JOBSTATUS", JobStatusInfo.getState(jobStatus.getState()));
 		int tasksFailed = 0;
-		addLine(report, "Status: " + JobStatusInfo.getState(jobStatus.getState()));
-		addLine(report, "============TASKS===========================");
 		for (TaskStatusInfo taskStatus : jobStatus.getTasks()) {
-			addLine(report, "Task " + taskStatus.getTaskId());
-			addLine(report, "Status: " + taskStatus.getState());
-			if (taskStatus.getState().equals("FAILED")) {
+			if (!reportResults(jobReport, taskStatus)) {
 				tasksFailed++;
 			}
-			addLine(report, "Spec: ");
-			addLine(report, taskStatus.getSpec().toString());
-			addLine(report, "============Replicas========================");
-			for (GridProcessStatusInfo process : taskStatus.getGridProcesses()) {
-				addLine(report, "Replica " + process.getId());
-				addLine(report, "Status: " + process.getState());
-				addLine(report, "Phase: " + process.getPhase());
-				String executionErrorCause = process.getReplicaResult().getExecutionErrorCause();
-				if (executionErrorCause != null) {
-					addLine(report, "Error cause: " + executionErrorCause);
-				}
-				WorkerStatusInfo allocation = process.getWorkerInfo();
-				if (allocation != null) {
-					addLine(report, "Allocated to: " + allocation.getWorkerID());
-				}
-				ExecutorResult executorResult = process.getReplicaResult().getExecutorResult();
-				if (executorResult != null) {
-					addLine(report, executorResult.toString());
-				}
-			}
-			addLine(report, "============================================");
 		}
 		
-		if (tasksFailed > 0) {
-			summaryLine += " - Tasks failed: " + tasksFailed;
-		}
-		addLine(summary, summaryLine + "</a>");
-		addLine(report, "============ERRORS==========================");
+		summaryReport.set("NUMBERTASKSFAILED", tasksFailed);
+		report.add("SUMMARY", summaryReport.build());
 		
 		if (jobStatus.getState() == JobStatusInfo.FINISHED) {
 			Properties prop = new Properties();
 			File jobPropertiesFile = new File(
 					jobsProperties.get(jobStatus.getJobId()));
 			if (jobPropertiesFile.exists()) {
-				try {
-					prop.load(new FileInputStream(jobPropertiesFile));
-					String property = prop.getProperty("output.expectedsizes");
-					JsonArray expectedSizes = (JsonArray) new JsonParser().parse(property);
-					if (!checkTasksOutput(jobStatus, expectedSizes, report)) {
-						return false;
-					}
-				} catch (IOException e) {
-					addLine(report, "Error while reading job properties: " + e.getMessage());
-					return false;
+				prop.load(new FileInputStream(jobPropertiesFile));
+				String property = prop.getProperty("output.expectedsizes");
+				JsonArray expectedSizes = (JsonArray) new JsonParser().parse(property);
+				if (!checkTasksOutput(jobStatus, expectedSizes, jobReport)) {
+					allOk = false;
 				}
 			}
-			return true;
+			allOk = true;
+		} else {
+			jobReport.add("ERROR", "No errors found!");
 		}
 		
-		return false;
+		report.add("JOB", jobReport.build());
+		return allOk;
 	}
 
-	private void addLine(StringBuilder builder, String message) {
-		builder.append(message).append("<br>");
+	private boolean reportResults(ReportBuilder report,
+			TaskStatusInfo taskStatus) throws IOException {
+		ReportBuilder taskReport = new ReportBuilder().load(new File("templates/task.tpl"));
+		taskReport.set("JOBID", taskStatus.getJobID())
+			.set("TASKID", taskStatus.getTaskId())
+			.set("TASKSTATUS", taskStatus.getState())
+			.set("TASKSPEC", taskStatus.getSpec().toString()
+					.replaceAll("\n", "<br>"));
+		if (taskStatus.getGridProcesses().size() > 0) {
+			for (GridProcessStatusInfo process : taskStatus.getGridProcesses()) {
+				reportResults(taskReport, process);
+			}
+		} else {
+			taskReport.add("REPLICA", "No replicas executed!");
+		}
+		report.add("TASK", taskReport.build());
+		
+		ReportBuilder taskSummaryReport = new ReportBuilder().load(new File("templates/tasksummary.tpl"));
+		taskSummaryReport.set("JOBID", taskStatus.getJobId())
+			.set("TASKID", taskStatus.getTaskId())
+			.set("TASKSTATUS", taskStatus.getState());
+		report.add("TASKSUMMARY", taskSummaryReport.build());
+		
+		return !taskStatus.getState().equals("FAILED");
+	}
+
+	private void reportResults(ReportBuilder report,
+			GridProcessStatusInfo process) throws IOException {
+		ReportBuilder replicaReport = new ReportBuilder().load(new File("templates/replica.tpl"));
+		replicaReport.set("REPLICAID", process.getId())
+			.set("REPLICASTATUS", process.getState())
+			.set("REPLICAPHASE", process.getPhase());
+		String executionErrorCause = process.getReplicaResult().getExecutionErrorCause();
+		replicaReport.set("REPLICAERRORCAUSE", executionErrorCause);
+		WorkerStatusInfo allocation = process.getWorkerInfo();
+		replicaReport.set("REPLICAALLOCATEDTO", allocation.getWorkerID());
+		ExecutorResult executorResult = process.getReplicaResult().getExecutorResult();
+		replicaReport.set("REPLICAEXECUTIONRESULT", executorResult);
+		report.add("REPLICA", replicaReport.build());
 	}
 
 	private boolean checkTasksOutput(JobStatusInfo jobStatus,
-			JsonArray expectedSizes, StringBuilder builder) {
+			JsonArray expectedSizes, ReportBuilder report) throws IOException {
 		
 		String sandboxDirPath = configuration.getProperty(Conf.SANDBOX_PATH);
 		
@@ -285,6 +292,8 @@ public class Doctor {
 		for (TaskStatusInfo taskStatus : jobStatus.getTasks()) {
 			JsonArray taskExpectedSizes = (JsonArray) expectedSizes.get(taskStatus.getTaskId()-1);
 			for (JsonElement expectedSizeEl : taskExpectedSizes) {
+				ReportBuilder errorReport = new ReportBuilder().load(new File("templates/error.tpl"));
+				
 				JsonObject expectSizeObj = (JsonObject) expectedSizeEl;
 				String outputName = expectSizeObj.get("name").getAsString();
 				outputName = outputName.replace("$TASK", String.valueOf(taskStatus.getTaskId()))
@@ -292,8 +301,10 @@ public class Doctor {
 				File outputFile = new File(sandboxDirPath, outputName);
 				
 				if (!outputFile.exists()) {
-					addLine(builder, "Output " + outputName + " was not found. "
+					errorReport.set("ERRORDESCRIPTION", 
+							"Output " + outputName + " was not found. "
 							+ "Task " + taskStatus.getId());
+					report.add("ERROR", errorReport.build());
 					allOk = false;
 					continue;
 				}
@@ -302,9 +313,11 @@ public class Doctor {
 				long actualSize = outputFile.length();
 				
 				if (actualSize != expectedSize) {
-					addLine(builder, "Output " + outputName + " has an unexpected size. "
+					errorReport.set("ERRORDESCRIPTION", 
+							"Output " + outputName + " has an unexpected size. "
 							+ "Expected: " + expectedSize + ", Actual: " + actualSize + ". "
 							+ "Task " + taskStatus.getId());
+					report.add("ERROR", errorReport.build());
 					allOk = false;
 					continue;
 				}

@@ -1,0 +1,1 @@
+<li><a href="#job%JOBID%">Job %JOBLABEL%: %JOBSTATUS% - Tasks failed: %NUMBERTASKSFAILED%</a></li>

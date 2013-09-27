@@ -25,20 +25,20 @@ public class ReportBuilder {
 		return this;
 	}
 	
-	public ReportBuilder set(String key, String value) {
+	public ReportBuilder set(String key, Object value) {
 		List<String> sections = new LinkedList<String>();
-		sections.add(value);
+		sections.add(value == null ? "" : value.toString());
 		variables.put(key, sections);
 		return this;
 	}
 	
-	public ReportBuilder add(String key, String value) {
+	public ReportBuilder add(String key, Object value) {
 		List<String> sections = variables.get(key);
 		if (sections == null) {
 			sections = new LinkedList<String>();
 			variables.put(key, sections);
 		}
-		sections.add(value);
+		sections.add(value == null ? "" : value.toString());
 		return this;
 	}
 	
@@ -51,7 +51,7 @@ public class ReportBuilder {
 			for (String replacement : replacements) {
 				replacementsBuilder.append(replacement);
 			}
-			report = report.replaceAll("%" + key + "%", replacementsBuilder.toString());
+			report = report.replace("%" + key + "%", replacementsBuilder.toString());
 		}
 		return report;
 	}
