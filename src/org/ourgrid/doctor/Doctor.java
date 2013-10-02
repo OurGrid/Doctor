@@ -234,6 +234,7 @@ public class Doctor {
 				if (!checkTasksOutput(jobStatus, expectedSizes, jobReport)) {
 					allOk = false;
 				} else {
+					allOk = true;
 					jobReport.add("ERROR", "No errors found!");
 				}
 			} else {
