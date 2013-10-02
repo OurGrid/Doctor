@@ -186,6 +186,8 @@ public class Doctor {
 		}
 		
 		try {
+			brokerDoctorClient.getManager().cleanAllFinishedJobs(
+					brokerDoctorClient.getManagerClient());
 			brokerDoctorClient.shutdown();
 		} catch (CommuneNetworkException e) {
 			e.printStackTrace();

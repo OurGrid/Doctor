@@ -27,7 +27,7 @@ final   : get output-$JOB.$TASK output-$JOB.$TASK
 
 task :
 init  	: 
-remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+remote 	: echo Hello World! > $STORAGE/storageHelloWorld
 final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
@@ -56,7 +56,7 @@ final   : get output-$JOB.$TASK output-$JOB.$TASK
 
 task :
 init  	: 
-remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+remote 	: echo Hello World! > $STORAGE/storageHelloWorld
 final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
@@ -85,7 +85,7 @@ final   : get output-$JOB.$TASK output-$JOB.$TASK
 
 task :
 init  	: 
-remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+remote 	: echo Hello World! > $STORAGE/storageHelloWorld
 final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
@@ -114,7 +114,7 @@ final   : get output-$JOB.$TASK output-$JOB.$TASK
 
 task :
 init  	: 
-remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+remote 	: echo Hello World! > $STORAGE/storageHelloWorld
 final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
@@ -143,7 +143,7 @@ final   : get output-$JOB.$TASK output-$JOB.$TASK
 
 task :
 init  	: 
-remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+remote 	: echo Hello World! > $STORAGE/storageHelloWorld
 final   : get $STORAGE/storageHelloWorld storageHelloWorld
 
 task :
@@ -172,5 +172,5 @@ final   : get output-$JOB.$TASK output-$JOB.$TASK
 
 task :
 init  	: 
-remote 	: echo Hello World! >> $STORAGE/storageHelloWorld
+remote 	: echo Hello World! > $STORAGE/storageHelloWorld
 final   : get $STORAGE/storageHelloWorld storageHelloWorld
